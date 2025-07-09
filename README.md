@@ -45,10 +45,12 @@ A modern, full-stack flight booking application built with Next.js, Supabase, an
 
 ## 🛠️ Installation
 
-### 1. Clone the Repository
+### 1. Push to the Repository
 ```bash
-git clone https://github.com/your-username/flight-booking-app.git
-cd flight-booking-app
+git remote set-url origin https://github.com/enzozone222/harmony.git
+git add .
+git commit -m "Your commit message"
+git push -u origin main
 ```
 
 ### 2. Install Dependencies

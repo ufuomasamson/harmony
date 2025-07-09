@@ -1,6 +1,6 @@
 # 🛫 Flight Booking Application
 
-A modern, full-stack flight booking application built with Next.js, Supabase, and Flutterwave payment integration.
+A modern, full-stack flight booking application built with Next.js, Supabase, and Flutterwave payment integration. The default currency is now US Dollars (USD).
 
 ## ✨ Features
 

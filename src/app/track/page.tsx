@@ -15,7 +15,7 @@ export default function TrackFlightPage() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
-  const { formatPrice } = useCurrencyStore();
+  const { formatPrice, currency } = useCurrencyStore();
   const searchParams = useSearchParams();
   const ticketRef = useRef<HTMLDivElement>(null);
 
@@ -101,7 +101,7 @@ export default function TrackFlightPage() {
         bookingId: booking.id,
         userId: user.id,
         amount: flight.price,
-        currency: 'EUR' // Force EUR currency
+        currency
       };
 
       const response = await fetch('/api/payment/initiate-v2', {

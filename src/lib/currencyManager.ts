@@ -22,7 +22,7 @@ const currencySymbols = {
 };
 
 export const useCurrencyStore = create<CurrencyState>((set, get) => ({
-  currency: 'EUR',
+  currency: 'USD',
   exchangeRates,
   setCurrency: (currency) => set({ currency }),
   formatPrice: (price: number) => {

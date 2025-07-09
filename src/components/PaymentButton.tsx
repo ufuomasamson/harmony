@@ -33,14 +33,17 @@ export async function downloadTicket(ticketElement: HTMLElement, fileName = 'fli
   }
 }
 
+import { useCurrencyStore } from '@/lib/currencyManager';
+
 export default function PaymentButton({
   bookingId,
   userId,
   amount,
-  currency = 'EUR',
+  currency: propCurrency,
   flightNumber,
   className = ''
 }: PaymentButtonProps) {
+  const { currency } = useCurrencyStore();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
 

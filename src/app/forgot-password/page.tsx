@@ -14,7 +14,7 @@ export default function ForgotPasswordPage() {
     setError("");
     setMessage("");
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: "https://harmonyair.vercel.app/reset-password",
     });
     if (error) {
       setError(error.message);

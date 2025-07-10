@@ -16,8 +16,11 @@ export default function Navigation() {
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Get initial session
-    const getSession = async () => {
+    let refreshInterval: NodeJS.Timeout | null = null;
+    let unsub: (() => void) | null = null;
+
+    // Helper to fetch and set session/user
+    const fetchSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         setUser(session.user);
@@ -29,36 +32,31 @@ export default function Navigation() {
           .single();
         setUserRole(userData?.role || null);
         setUser((prevUser: any) => ({ ...prevUser, full_name: userData?.full_name || '' }));
-        
-        // Try to fetch user currency preference, but don't fail if table doesn't exist
+        // Try to fetch user currency preference
         try {
           const { data: prefData, error } = await supabase
             .from('user_preferences')
             .select('currency_code')
             .eq('user_id', session.user.id)
             .maybeSingle();
-          
-          if (error) {
-            console.log("Error fetching user preferences:", error);
-          } else if (prefData) {
-            setCurrency(prefData.currency_code);
-          }
+          if (!error && prefData) setCurrency(prefData.currency_code);
         } catch (error) {
-          // Table doesn't exist or other error, use default currency
-          console.log("user_preferences table not found or error occurred, using default currency");
+          // ignore
         }
+      } else {
+        setUser(null);
+        setUserRole(null);
       }
       setLoading(false);
     };
 
-    getSession();
+    fetchSession();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (session?.user) {
           setUser(session.user);
-          // Fetch user role and full name
           const { data: userData } = await supabase
             .from("users")
             .select("role, full_name")
@@ -73,19 +71,35 @@ export default function Navigation() {
         setLoading(false);
       }
     );
+    unsub = () => subscription.unsubscribe();
 
-    return () => subscription.unsubscribe();
+    // Periodically refresh session every 5 minutes (to keep alive for up to 30 min)
+    refreshInterval = setInterval(fetchSession, 5 * 60 * 1000);
+
+    return () => {
+      if (unsub) unsub();
+      if (refreshInterval) clearInterval(refreshInterval);
+    };
   }, []);
 
   useEffect(() => {
     if (!isMobileMenuOpen) return;
+    // Defensive: ensure menu always opens/closes correctly
     function handleClickOutside(event: MouseEvent) {
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
         setIsMobileMenuOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    // Also close menu on route change (fixes stuck menu on navigation)
+    const closeMenu = () => setIsMobileMenuOpen(false);
+    window.addEventListener('hashchange', closeMenu);
+    window.addEventListener('popstate', closeMenu);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener('hashchange', closeMenu);
+      window.removeEventListener('popstate', closeMenu);
+    };
   }, [isMobileMenuOpen]);
 
   const handleSignOut = async () => {
